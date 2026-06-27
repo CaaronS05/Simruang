@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Controllers\Api\V1\Admin\BookingController as AdminBookingController;
 use App\Http\Controllers\Api\V1\Admin\FacilityController as AdminFacilityController;
 use App\Http\Controllers\Api\V1\Admin\RoomController as AdminRoomController;
 use App\Http\Controllers\Api\V1\Admin\RoomFacilityController;
 use App\Http\Controllers\Api\V1\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Api\V1\Auth\AuthController;
+use App\Http\Controllers\Api\V1\BookingController;
 use App\Http\Controllers\Api\V1\RoomController;
 use Illuminate\Support\Facades\Route;
 
@@ -28,7 +30,17 @@ Route::name('api.')->group(function (): void {
         Route::get('rooms', [RoomController::class, 'index'])->name('rooms.index');
         Route::get('rooms/{room}', [RoomController::class, 'show'])->name('rooms.show');
 
+        Route::post('bookings', [BookingController::class, 'store'])->name('bookings.store');
+        Route::get('bookings', [BookingController::class, 'index'])->name('bookings.index');
+        Route::post('bookings/{booking}/cancel', [BookingController::class, 'cancel'])->name('bookings.cancel');
+        Route::get('bookings/{booking}', [BookingController::class, 'show'])->name('bookings.show');
+
         Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function (): void {
+            Route::get('bookings', [AdminBookingController::class, 'index'])->name('bookings.index');
+            Route::post('bookings/{booking}/approve', [AdminBookingController::class, 'approve'])->name('bookings.approve');
+            Route::post('bookings/{booking}/reject', [AdminBookingController::class, 'reject'])->name('bookings.reject');
+            Route::get('bookings/{booking}', [AdminBookingController::class, 'show'])->name('bookings.show');
+
             Route::post('rooms', [AdminRoomController::class, 'store'])->name('rooms.store');
             Route::match(['put', 'patch'], 'rooms/{room}', [AdminRoomController::class, 'update'])->name('rooms.update');
             Route::delete('rooms/{room}', [AdminRoomController::class, 'destroy'])->name('rooms.destroy');

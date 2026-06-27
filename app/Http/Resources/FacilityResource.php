@@ -26,6 +26,7 @@ class FacilityResource extends JsonResource
             'photo_url' => $this->photo_path ? Storage::disk('public')->url($this->photo_path) : null,
             'is_active' => $this->is_active,
             'quantity' => $this->whenPivotLoaded('facility_room', fn (): int => $this->pivot->quantity),
+            'requested_quantity' => $this->whenPivotLoaded('booking_facility', fn (): int => $this->pivot->quantity),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

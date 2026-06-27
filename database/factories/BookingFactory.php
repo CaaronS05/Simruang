@@ -3,6 +3,8 @@
 namespace Database\Factories;
 
 use App\Enums\BookingStatus;
+use App\Enums\RoomStatus;
+use App\Enums\UserRole;
 use App\Models\Booking;
 use App\Models\Room;
 use App\Models\User;
@@ -21,14 +23,14 @@ class BookingFactory extends Factory
      */
     public function definition(): array
     {
-        $startAt = fake()->dateTimeBetween('+1 day', '+1 month');
+        $startAt = now()->addWeekday()->setTime(9, 0);
 
         return [
-            'booking_code' => 'BK-'.Str::upper(Str::random(10)),
-            'user_id' => User::factory(),
-            'room_id' => Room::factory(),
+            'booking_code' => 'SIM-'.$startAt->format('Ymd').'-'.Str::upper(Str::random(6)),
+            'user_id' => User::factory()->state(['role' => UserRole::STUDENT, 'is_active' => true]),
+            'room_id' => Room::factory()->state(['status' => RoomStatus::AVAILABLE]),
             'start_at' => $startAt,
-            'end_at' => (clone $startAt)->modify('+2 hours'),
+            'end_at' => $startAt->copy()->addHours(2),
             'status' => BookingStatus::PENDING,
             'document_path' => null,
             'rejection_reason' => null,
@@ -37,5 +39,38 @@ class BookingFactory extends Factory
             'cancelled_at' => null,
             'completed_at' => null,
         ];
+    }
+
+    public function approved(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => BookingStatus::APPROVED,
+            'reviewed_at' => now(),
+        ]);
+    }
+
+    public function rejected(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => BookingStatus::REJECTED,
+            'reviewed_at' => now(),
+            'rejection_reason' => 'Ditolak.',
+        ]);
+    }
+
+    public function cancelled(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => BookingStatus::CANCELLED,
+            'cancelled_at' => now(),
+        ]);
+    }
+
+    public function completed(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => BookingStatus::COMPLETED,
+            'completed_at' => now(),
+        ]);
     }
 }
